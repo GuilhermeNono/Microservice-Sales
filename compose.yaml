@@ -1,0 +1,6 @@
+﻿services:
+  microservice:
+    image: microservice
+    build:
+      context: .
+      dockerfile: Microservice/Dockerfile
