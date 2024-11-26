@@ -1,70 +1,45 @@
 ﻿services:
-  gateway.api:
+  gateway-api:
     image: ${DOCKER_REGISTRY-}gateway.api
     container_name: "Api-Gateway"
     build:
       context: .
       dockerfile: Gateway.Api/Dockerfile
     ports:
-      - "5123:5123"
-      - "7064:7064"
-    environment:
-      - ASPNETCORE_HTTP_PORTS=5123
-      - ASPNETCORE_HTTPS_PORTS=7064
+      - "5123:8080"
     networks:
       - proxy-backend
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
 
-  product.api:
+  product-api:
     image: ${DOCKER_REGISTRY-}product.api
     container_name: "Api-Product"
     build:
       context: .
       dockerfile: Product.Api/Dockerfile
     ports:
-      - "5279:5279"
-      - "7077:7077"
-    environment:
-      - ASPNETCORE_HTTP_PORTS=5279
-      - ASPNETCORE_HTTPS_PORTS=7077
+      - "5279:8080"
     networks:
       - proxy-backend
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
 
-  sale.api:
+  sale-api:
     image: ${DOCKER_REGISTRY-}sale.api
     container_name: "Api-Sale"
     build:
       context: .
       dockerfile: Sale.Api/Dockerfile
     ports:
-      - "5252:5252"
-      - "7239:7239"
-    environment:
-      - ASPNETCORE_HTTP_PORTS=5252
-      - ASPNETCORE_HTTPS_PORTS=7239
+      - "5252:8080"
     networks:
       - proxy-backend
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
       
-  user.api:
+  user-api:
     image: ${DOCKER_REGISTRY-}user.api
     container_name: "Api-User"
     build:
       context: .
       dockerfile: User.Api/Dockerfile
     ports:
-      - "5259:5259"
-      - "7143:7143"
-    environment:
-      - ASPNETCORE_HTTP_PORTS=5259
-      - ASPNETCORE_HTTPS_PORTS=7143
+      - "5259:8080"
     networks:
       - proxy-backend
 
