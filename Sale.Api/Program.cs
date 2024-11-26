@@ -1,3 +1,5 @@
+using Sale.Api.Model;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -16,29 +18,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapGet("/sales", () => SaleWrapper.Sales)
+    .WithName("GetSales")
+    .WithOpenApi();
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/sales/{id}", (int id) => SaleWrapper.Sales.FirstOrDefault(f => f.Id == id))
+    .WithName("GetSaleById")
+    .WithOpenApi();
+
+app.MapPost("/sales", (Sale.Api.Model.Sale sale) =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
+        SaleWrapper.Sales.Add(sale);
+        return Results.Created($"/sales/{sale.Id}", sale);
     })
-    .WithName("GetWeatherForecast")
+    .WithName("InsertSale")
+    .WithOpenApi();
+
+app.MapDelete("/sales/{id}", (int id) =>
+    {
+        var sale = SaleWrapper.Sales.FirstOrDefault(f => f.Id == id);
+        
+        if (sale is null) 
+            return Results.NotFound();
+        
+        SaleWrapper.Sales.Remove(sale);
+        return Results.NoContent();
+    })
+    .WithName("RemoveSale")
     .WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

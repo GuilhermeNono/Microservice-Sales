@@ -1,3 +1,5 @@
+using User.Api.Model;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -16,29 +18,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapGet("/users", () => UserWrapper.Users)
+    .WithName("GetUsers")
+    .WithOpenApi();
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/users/{id}", (int id) => UserWrapper.Users.FirstOrDefault(f => f.Id == id))
+    .WithName("GetUserById")
+    .WithOpenApi();
+
+app.MapPost("/users", (User.Api.Model.User user) =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
+        UserWrapper.Users.Add(user);
+        return Results.Created($"/users/{user.Id}", user);
     })
-    .WithName("GetWeatherForecast")
+    .WithName("InsertUser")
+    .WithOpenApi();
+
+app.MapDelete("/users/{id}", (int id) =>
+    {
+        var user = UserWrapper.Users.FirstOrDefault(f => f.Id == id);
+        
+        if (user is null) 
+            return Results.NotFound();
+        
+        UserWrapper.Users.Remove(user);
+        return Results.NoContent();
+    })
+    .WithName("RemoveUser")
     .WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

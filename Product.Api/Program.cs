@@ -1,3 +1,5 @@
+using Product.Api.Model;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -16,25 +18,35 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
+app.MapGet("/products", () => ProductWrapper.Products)
+    .WithName("GetProducts")
     .WithOpenApi();
+
+app.MapGet("/products/{id}", (int id) => ProductWrapper.Products.FirstOrDefault(f => f.Id == id))
+    .WithName("GetProductById")
+    .WithOpenApi();
+
+app.MapPost("/products", (Product.Api.Model.Product product) =>
+    {
+        ProductWrapper.Products.Add(product);
+        return Results.Created($"/products/{product.Id}", product);
+    })
+    .WithName("InsertProduct")
+    .WithOpenApi();
+
+app.MapDelete("/products/{id}", (int id) =>
+    {
+        var product = ProductWrapper.Products.FirstOrDefault(f => f.Id == id);
+        
+        if (product is null) 
+            return Results.NotFound();
+        
+        ProductWrapper.Products.Remove(product);
+        return Results.NoContent();
+    })
+    .WithName("RemoveProduct")
+    .WithOpenApi();
+
 
 app.Run();
 
