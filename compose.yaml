@@ -7,6 +7,8 @@
       dockerfile: Gateway.Api/Dockerfile
     ports:
       - "5123:8080"
+    depends_on:
+      - sys-db
     networks:
       - proxy-backend
 
@@ -18,6 +20,8 @@
       dockerfile: Product.Api/Dockerfile
     ports:
       - "5279:8080"
+    depends_on:
+      - sys-db
     networks:
       - proxy-backend
 
@@ -29,6 +33,8 @@
       dockerfile: Sale.Api/Dockerfile
     ports:
       - "5252:8080"
+    depends_on:
+      - sys-db
     networks:
       - proxy-backend
       
@@ -40,8 +46,38 @@
       dockerfile: User.Api/Dockerfile
     ports:
       - "5259:8080"
+    depends_on:
+      - sys-db
     networks:
       - proxy-backend
+        
+  sys-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: "Sys-Db"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "S1S_U53R_DB"
+      MSSQL_TCP_PORT: 1234
+    ports:
+      - "1234:1234"
+    volumes:
+      - ./containers/database:/var/opt/mssql/data
+    networks:
+      - proxy-backend
+    
+  identity:
+    image: quay.io/keycloak/keycloak
+    container_name: keycloak-identity
+    command:
+      - start-dev
+    ports:
+      - "18080:8080"
+    environment:
+      - KC_HEALTH_ENABLED=true
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./.containers/identity:/opt/keycloak/data
 
 networks:
   proxy-backend:
